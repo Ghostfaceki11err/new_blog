@@ -1,6 +1,6 @@
 
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { getAllPosts, createPost } from '@/lib/posts'
 
 // GET all posts
 export async function GET(request: NextRequest) {
@@ -9,26 +9,11 @@ export async function GET(request: NextRequest) {
     const publishedOnly = searchParams.get('published') === 'true'
     const search = searchParams.get('search') || ''
 
-    let query = supabase
-      .from('blog_posts')
-      .select('*')
-      .order('date', { ascending: false })
-
-    if (publishedOnly) {
-      query = query.eq('published', true)
-    }
-
-    if (search) {
-      query = query.ilike('title', `%${search}%`)
-    }
-
-    const { data, error } = await query
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    return NextResponse.json(data)
+    const all = await getAllPosts()
+    const filtered = all
+      .filter(p => (publishedOnly ? p.status === 'published' : true))
+      .filter(p => (search ? p.title.toLowerCase().includes(search.toLowerCase()) : true))
+    return NextResponse.json(filtered)
   } catch (error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
@@ -38,25 +23,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    
-    const { data, error } = await supabase
-      .from('blog_posts')
-      .insert([{
-        title: body.title,
-        excerpt: body.excerpt,
-        content: body.content,
-        image: body.image,
-        date: body.date,
-        author: body.author,
-        published: body.published || false
-      }])
-      .select()
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    return NextResponse.json(data[0], { status: 201 })
+    const created = await createPost({
+      title: body.title,
+      excerpt: body.excerpt,
+      content: body.content,
+      status: body.published ? 'published' : 'draft'
+    })
+    return NextResponse.json(created, { status: 201 })
   } catch (error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }

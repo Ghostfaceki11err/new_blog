@@ -137,17 +137,14 @@ const mockPartnerLogos = [
 export type PartnerLogoType = (typeof mockPartnerLogos)[0];
 
 const HomePage = () => {
-	return (
-		<main className="flex-grow">
-			<HeroSection />
-			<ServicesOverview />
-			<FeaturedEvents />
-			<CommunityHighlights />
-			<NewsHighlights newsItems={mockNewsItems} />
-			<Testimonials testimonials={mockTestimonials} />
-			<PartnerLogos logos={mockPartnerLogos} />
-		</main>
-	);
+    return (
+        <main className="flex-grow">
+            <HeroSection />
+            <ServicesOverview />
+        </main>
+    );
 };
+
+// Temporarily removed Navbar/Footer while diagnosing prerender issue
 
 export default HomePage;

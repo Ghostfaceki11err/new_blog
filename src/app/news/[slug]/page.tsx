@@ -7,9 +7,9 @@ import { CalendarDays, Tag } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface NewsArticlePageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 // Function to get a single news item by slug (replace with actual data fetching)
@@ -17,8 +17,8 @@ const getNewsItem = (slug: string): NewsItemType | undefined => {
   return mockNewsItems.find((item) => item.slug === slug);
 };
 
-const NewsArticlePage: React.FC<NewsArticlePageProps> = ({ params }) => {
-  const { slug } = params;
+const NewsArticlePage = async ({ params }: NewsArticlePageProps) => {
+  const { slug } = await params;
   const newsItem = getNewsItem(slug);
 
   if (!newsItem) {

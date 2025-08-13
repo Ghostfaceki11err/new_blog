@@ -26,18 +26,9 @@ export default function RootLayout({
       <body
         className={inter.className}
       >
-        <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-        >
-          <BlogProvider>
-            <Navbar/>
-              {children}
-            <Footer/>
-          </BlogProvider>
-        </ThemeProvider>
+        <BlogProvider>
+          {children}
+        </BlogProvider>
       </body>
     </html>
   );

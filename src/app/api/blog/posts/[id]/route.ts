@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { deletePost, getPostById, updatePost } from '@/lib/posts'
 
 // GET single post
 export async function GET(
@@ -8,17 +8,9 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const { data: post, error } = await supabase
-      .from('blog_posts')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 404 });
-    }
-
-    return NextResponse.json(post);
+    const post = await getPostById(parseInt(id))
+    if (!post) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    return NextResponse.json(post)
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch post' }, { status: 500 });
   }
@@ -32,19 +24,14 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-
-    const { data: post, error } = await supabase
-      .from('blog_posts')
-      .update(body)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-
-    return NextResponse.json(post);
+    const updated = await updatePost(parseInt(id), {
+      title: body.title,
+      content: body.content,
+      excerpt: body.excerpt,
+      status: body.published ? 'published' : 'draft'
+    })
+    if (!updated) return NextResponse.json({ error: 'Update failed' }, { status: 400 })
+    return NextResponse.json(updated)
   } catch (error) {
     return NextResponse.json({ error: 'Failed to update post' }, { status: 500 });
   }
@@ -57,16 +44,9 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const { error } = await supabase
-      .from('blog_posts')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-
-    return NextResponse.json({ message: 'Post deleted successfully' });
+    const ok = await deletePost(parseInt(id))
+    if (!ok) return NextResponse.json({ error: 'Delete failed' }, { status: 400 })
+    return NextResponse.json({ message: 'Post deleted successfully' })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to delete post' }, { status: 500 });
   }
